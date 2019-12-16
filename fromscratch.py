@@ -135,7 +135,7 @@ preds = model(inputs, W, B)
 loss = MSE(preds, targets)
 print (loss)
 
-#%% Remeat the training multiple epochs
+#%% Repeat the training multiple epochs
 import matplotlib.pyplot as plt
 
 W = torch.randn(2, 3, requires_grad=True)
@@ -163,4 +163,72 @@ ax.set_xlabel("iteration")
 ax.set_ylabel("distance")
 plt.show()
 
+#%% Use some built in functionality 
 
+import torch
+import numpy as np
+
+# Input (temp, rainfall, humidity)
+inputs = np.array([[73, 67, 43], [91, 88, 64], [87, 134, 58], [102, 43, 37], [69, 96, 70], [73, 67, 43], [91, 88, 64], [87, 134, 58], [102, 43, 37], [69, 96, 70], [73, 67, 43], [91, 88, 64], [87, 134, 58], [102, 43, 37], [69, 96, 70]], dtype='float32')
+# Targets (apples, oranges)
+targets = np.array([[56, 70], [81, 101], [119, 133], [22, 37], [103, 119], 
+                    [56, 70], [81, 101], [119, 133], [22, 37], [103, 119], 
+                    [56, 70], [81, 101], [119, 133], [22, 37], [103, 119]], dtype='float32')
+
+# Convert inputs and targets to torch tensors
+inputs = torch.from_numpy(inputs)
+targets = torch.from_numpy(targets)
+
+from torch.utils.data import TensorDataset, DataLoader
+# Define dataset
+train_ds = TensorDataset(inputs, targets)
+#train_ds[0:3]
+
+# Define data loader
+batch_size = 5
+train_dl = DataLoader(train_ds, batch_size, shuffle=True)
+next(iter(train_dl))
+
+#%% Builda model
+model = torch.nn.Linear(3, 2)
+
+# we do not include any dropout or normalisation layers. It automaticalle initiazes w and b
+print(model.weight)
+print(model.bias)
+
+opt = torch.optim.SGD(model.parameters(), lr=1e-6)
+#opt = torch.optim.Adam(model.parameters(), lr=1e-5, betas=(0.9, 0.999), eps=1e-08)
+
+# we use the loss function built in into torch
+loss_fn = torch.nn.functional.mse_loss
+loss = loss_fn(model(inputs), targets)
+print(loss)
+
+#%% we train
+
+import matplotlib.pyplot as plt
+
+
+def fit(num_epoch, plot_epoch, model, opt, loss_fn):
+    d = []
+    for epoch in range(num_epoch):
+        for x,y in train_dl:
+            # Generate predictions
+            pred = model(x)
+            loss = loss_fn(pred, y)
+            loss.backward()
+            opt.step()
+            opt.zero_grad()
+            
+            d.append(loss_fn(model(inputs), targets))
+            
+        if epoch % plot_epoch == 0:
+            fig, ax = plt.subplots()
+            ax.plot(d)
+            ax.set_xlabel("iteration")
+            ax.set_ylabel("distance")
+            plt.show()
+            
+            
+test_fit = fit(100, 10,model, opt, loss_fn)
+          
