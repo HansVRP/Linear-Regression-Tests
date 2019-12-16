@@ -208,6 +208,9 @@ print(loss)
 
 import matplotlib.pyplot as plt
 
+loss = loss_fn(model(inputs), targets)
+print(loss)
+
 
 def fit(num_epoch, plot_epoch, model, opt, loss_fn):
     d = []
@@ -231,4 +234,34 @@ def fit(num_epoch, plot_epoch, model, opt, loss_fn):
             
             
 test_fit = fit(100, 10,model, opt, loss_fn)
+          
+loss = loss_fn(model(inputs), targets)
+print(loss)
+
+#%% the model was not very advanced, we can include more layers to improve the final result
+
+
+class SimpleNet(torch.nn.Module):
+    # Initialize the layers
+    def __init__(self):
+        super().__init__() # from what does it inheret in this case? no other class was defined
+        self.linear1 = torch.nn.Linear(3, 3)
+        self.act1 = torch.nn.ReLU() # Activation function, can also use a leaky one
+        self.linear2 = torch.nn.Linear(3, 2)
+    
+    # Perform the computation
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.act1(x)
+        x = self.linear2(x)
+        return x
+
+modeln = SimpleNet()
+
+
+opt = torch.optim.SGD(modeln.parameters(), lr=1e-5)
+
+loss_fn = torch.nn.functional.mse_loss
+
+test_fit = fit(100, 10,modeln, opt, loss_fn)
           
